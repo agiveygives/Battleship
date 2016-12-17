@@ -42,7 +42,7 @@ def create_ship(name, size):
     # ship creation
     we_good = False
     ship = {
-        "name": name
+        "name": name,
         "hits": size - 1,
         "vertical": vertical(),
         "nose_row": 0,
