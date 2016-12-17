@@ -1,5 +1,7 @@
 from random import randint
 
+turns = 15
+
 board = []
 used = []
 
@@ -43,7 +45,7 @@ def create_ship(name, size):
     we_good = False
     ship = {
         "name": name,
-        "hits": size - 1,
+        "hits": size,
         "vertical": vertical(),
         "nose_row": 0,
         "nose_col": 0,
@@ -61,9 +63,9 @@ def create_ship(name, size):
         ship["port_col"] = ship["nose_col"] + ((size - 1) * horizontal(ship["vertical"]))
 
         if ship["port_row"] not in range(10):
-            ship["port_row"] = ship["nose_row"] - 3
+            ship["port_row"] = ship["nose_row"] - (size - 1)
         if ship["port_col"] not in range(10):
-            ship["port_col"] = ship["nose_col"] - 3
+            ship["port_col"] = ship["nose_col"] - (size - 1)
 
         if ship["nose_row"] == ship["port_row"]:
             for x in range(size):
@@ -77,7 +79,7 @@ def create_ship(name, size):
                     ship["range_row"].append(x)
 
         if ship["nose_col"] == ship["port_col"]:
-            for x in range(4):
+            for x in range(size):
                 ship["range_col"].append(ship["nose_col"])
         else:
             if ship["nose_col"] < ship["port_col"]:
@@ -98,45 +100,56 @@ def create_ship(name, size):
     return ship
 
 def check_hit(guess_row, guess_col, ship):
-    if guess_row in ship["range_row"] and guess_col in ship["range_col"] and ship["hits"] == 0 and board[guess_row][guess_col] != "H":
-        print "Congratulations! You sunk my %s!" % ship["name"]
-        return True
-    elif guess_row in ship["range_row"] and guess_col in ship["range_col"] and ship["hits"] > 0 and board[guess_row][guess_col] != "H":
-        ship["hits"] -= 1
-        board[guess_row][guess_col] = "H"
-        print "You hit my %s!" % ship["name"]
-        return True
-    else:
-        return False
+	if board[guess_row][guess_col] == "O":
+		if guess_row in ship["range_row"] and guess_col in ship["range_col"] and ship["hits"] == 1:
+			ship["hits"] -= 1
+			board[guess_row][guess_col] = "H"
+			print "Congratulations! You sunk my %s!" % ship["name"]
+			return True
+		elif guess_row in ship["range_row"] and guess_col in ship["range_col"] and ship["hits"] > 1:
+			ship["hits"] -= 1
+			board[guess_row][guess_col] = "H"
+			print "You hit my %s!" % ship["name"]
+			return True
+		else:
+			return False
+	else:
+		return False
     
 # ship creation
 battleship = create_ship("Battleship", 4)
 carrier = create_ship("Carrier", 5)
 sub = create_ship("Submarine", 3)
 
-for turn in range(10):
-    print battleship["range_row"]
-    print battleship["range_col"]
-    print carrier["range_row"]
-    print carrier["range_col"]
-    print "Turn: ", turn + 1
-    guess_row = int(raw_input("Guess Row:"))
-    guess_col = int(raw_input("Guess Col:"))
+for turn in range(turns):
+	print battleship["range_row"]
+	print battleship["range_col"]
+	print carrier["range_row"]
+	print carrier["range_col"]
+	print sub["range_row"]
+	print sub["range_col"]
+	print "Turn: ", turn + 1
+	guess_row = int(raw_input("Guess Row:"))
+	guess_col = int(raw_input("Guess Col:"))
     
-    if check_hit(guess_row, guess_col, battleship):
-    elif check_hit(guess_row, guess_col, carrier):
-    elif check_hit(guess_row, guess_col, sub):
-    else:
-        if (guess_row < 0 or guess_row > 9) or (guess_col < 0 or guess_col > 9):
-            print "Oops, that's not even in the ocean."
-        elif(board[guess_row][guess_col] == "H" or board[guess_row][guess_col] == "M"):
-            print "You guessed that one already."
-        else:
-            print "You missed!"
-            board[guess_row][guess_col] = "M"
-        if turn == 10:
-            print "Game Over"
-    if battleship["hits"] == 0 and carrier["hits"] == 0 and sub["hits"] == 0:
-        print "Woah, you won."
-        break
-    print_board(board)
+	if check_hit(guess_row, guess_col, battleship):
+		print_board(board)
+	elif check_hit(guess_row, guess_col, carrier):
+		print_board(board)
+	elif check_hit(guess_row, guess_col, sub):
+		print_board(board)
+	else:
+		if (guess_row < 0 or guess_row > 9) or (guess_col < 0 or guess_col > 9):
+			print "Oops, that's not even in the ocean."
+		elif board[guess_row][guess_col] != "O":
+			print "You guessed that one already."
+		else:
+			print "You missed!"
+			board[guess_row][guess_col] = "M"
+		if turn == turns - 1:
+			print "Game Over"
+			
+	print
+	if battleship["hits"] == 0 and carrier["hits"] == 0 and sub["hits"] == 0:
+		print "Woah, you won."
+		break
