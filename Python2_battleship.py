@@ -1,6 +1,7 @@
 from random import randint
 
 board = []
+used = []
 
 for x in range(10):
     board.append(["O"] * 10)
@@ -11,6 +12,14 @@ def print_board(board):
 
 print "Let's play Battleship!"
 print_board(board)
+
+def check_use(coordinate):
+    #checks if a position is already in use
+    #returns true is place is being used, false if it is free
+    if coordinate in used:
+        return True
+    else:
+        return False
 
 def random_row(board):
     return randint(0, len(board) - 1)
@@ -26,51 +35,77 @@ def horizontal(vertical):
         return 1
     else:
         return 0
-
-battleship = {
-    "hits": 0,
-    "vertical": vertical(),
-    "nose_row": random_row(board),
-    "nose_col": random_col(board),
-    "port_row": 0,
-    "port_col": 0,
-    "range_row": [],
-    "range_col": []
-}
-
-battleship["port_row"] = battleship["nose_row"] + (3 * battleship["vertical"])
-battleship["port_col"] = battleship["nose_col"] + (3 * horizontal(battleship["vertical"]))
-
-if battleship["port_row"] not in range(10):
-    battleship["port_row"] = battleship["nose_row"] - 3
-if battleship["port_col"] not in range(10):
-    battleship["port_col"] = battleship["nose_col"] - 3
-
-if battleship["nose_row"] == battleship["port_row"]:
-    for x in range(4):
-        battleship["range_row"].append(battleship["nose_row"])
-else:
-    if battleship["nose_row"] < battleship["port_row"]:
-        for x in range(battleship["nose_row"], battleship["port_row"] + 1):
-            battleship["range_row"].append(x)
-    else:
-        for x in range(battleship["port_row"], battleship["nose_row"] + 1):
-            battleship["range_row"].append(x)
     
-if battleship["nose_col"] == battleship["port_col"]:
-    for x in range(4):
-        battleship["range_col"].append(battleship["nose_col"])
-else:
-    if battleship["nose_col"] < battleship["port_col"]:
-        for x in range(battleship["nose_col"], battleship["port_col"] + 1):
-            battleship["range_col"].append(x)
-    else:
-        for x in range(battleship["port_col"], battleship["nose_col"] + 1):
-            battleship["range_col"].append(x)
+def create_ship(name, size):
+    # creates and places a ship
+    # returns dictionary ship
+    # ship creation
+    we_good = False
+    ship = {
+        "name": name
+        "hits": 0,
+        "vertical": vertical(),
+        "nose_row": 0,
+        "nose_col": 0,
+        "port_row": 0,
+        "port_col": 0,
+        "range_row": [],
+        "range_col": []
+    }
+
+    # ship placement
+    while not we_good:
+        ship["nose_row"] = random_row(board)
+        ship["nose_col"] = random_col(board)
+        ship["port_row"] = ship["nose_row"] + ((size - 1) * ship["vertical"])
+        ship["port_col"] = ship["nose_col"] + ((size - 1) * horizontal(ship["vertical"]))
+
+        if ship["port_row"] not in range(10):
+            ship["port_row"] = ship["nose_row"] - 3
+        if ship["port_col"] not in range(10):
+            ship["port_col"] = ship["nose_col"] - 3
+
+        if ship["nose_row"] == ship["port_row"]:
+            for x in range(size):
+                ship["range_row"].append(ship["nose_row"])
+        else:
+            if ship["nose_row"] < ship["port_row"]:
+                for x in range(ship["nose_row"], ship["port_row"] + 1):
+                    ship["range_row"].append(x)
+            else:
+                for x in range(ship["port_row"], ship["nose_row"] + 1):
+                    ship["range_row"].append(x)
+
+        if ship["nose_col"] == ship["port_col"]:
+            for x in range(4):
+                ship["range_col"].append(ship["nose_col"])
+        else:
+            if ship["nose_col"] < ship["port_col"]:
+                for x in range(ship["nose_col"], ship["port_col"] + 1):
+                    ship["range_col"].append(x)
+            else:
+                for x in range(ship["port_col"], ship["nose_col"] + 1):
+                    ship["range_col"].append(x)
+        for i in range(size):
+            if [ship["range_row"][i], ship["range_col"][i]] in used:
+                we_good = False
+                break
+            else:
+                we_good = True
+        #end of while loop
+    for i in range(size):
+        used.append([ship["range_row"][i], ship["range_col"][i]])
+    return ship
     
+# ship creation
+battleship = create_ship("Battleship", 4)
+carrier = create_ship("Carrier", 5)
+
 for turn in range(10):
     print battleship["range_row"]
     print battleship["range_col"]
+    print carrier["range_row"]
+    print carrier["range_col"]
     print "Turn: ", turn + 1
     guess_row = int(raw_input("Guess Row:"))
     guess_col = int(raw_input("Guess Col:"))
@@ -89,7 +124,7 @@ for turn in range(10):
         elif(board[guess_row][guess_col] == "H" or board[guess_row][guess_col] == "M"):
             print "You guessed that one already."
         else:
-            print "You missed my battleship!"
+            print "You missed!"
             board[guess_row][guess_col] = "M"
         if turn == 10:
             print "Game Over"
